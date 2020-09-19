@@ -1,0 +1,209 @@
+<?xml version="1.0"?>
+<!-- Sensor Examples https://github.com/ros-simulation/gazebo_ros_pkgs/tree/ros2/gazebo_plugins -->
+<robot name="metrobot" xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <!-- https://en.wikipedia.org/wiki/List_of_moments_of_inertia -->
+
+    <xacro:macro name="chassis_inertial_params">
+        <origin xyz="0.1477 0 0" rpy="0 0 0" />
+        <mass value="${base_mass}" />
+        <inertia ixx="${1.0/12*base_mass*(base_thickness*base_thickness + base_width*base_width)}" ixy="0" ixz="0"
+                 iyy="${1.0/12*base_mass*(base_length*base_length + base_width*base_width)}"   iyz="0"
+                 izz="${1.0/12*base_mass*(base_thickness*base_thickness + base_length*base_length)}" />
+    </xacro:macro>
+
+
+    <xacro:macro name="drive_wheel_inertial_params">
+        <origin xyz="0 0 -0.0225" rpy="0 0 0" />
+        <mass value="${drive_wheel_mass}" />
+        <inertia ixx="${drive_wheel_mass}" ixy="0"          ixz="0"
+                 iyy="${drive_wheel_mass}" iyz="0"
+                 izz="${drive_wheel_mass}" />
+    </xacro:macro>
+
+    <xacro:macro name="omni_wheel_inertial_params">
+        <origin xyz="0 0 -0.0225" rpy="0 0 0" />
+        <mass value="${omni_wheel_mass}" />
+        <inertia ixx="${omni_wheel_mass}" ixy="0"          ixz="0"
+                 iyy="${omni_wheel_mass}" iyz="0"
+                 izz="${omni_wheel_mass}" />
+    </xacro:macro>
+
+    <xacro:macro name="chassis_geometry">
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+            <box size="${base_width} ${base_length} ${base_thickness}" />
+        </geometry>
+    </xacro:macro>
+
+    <xacro:macro name="drive_wheel_geometry">
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+            <cylinder radius="${drive_wheel_radius}" length="${drive_wheel_thickness}" />
+        </geometry>
+    </xacro:macro>
+
+    <xacro:macro name="omni_wheel_geometry">
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+            <cylinder radius="${omni_wheel_radius}" length="${omni_wheel_thickness}" />
+        </geometry>
+    </xacro:macro>
+
+    <!-- transmission macros -->
+
+    <xacro:macro name="drive_wheel_transmission" params="name">
+        <transmission name="${name}_transmission" type="SimpleTransmission">
+            <type>transmission_interface/SimpleTransmission</type>
+            <joint name="${name}_joint">
+                <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+            </joint>
+            <actuator name="${name}_motor">
+                <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+                <mechanicalReduction>1</mechanicalReduction>
+            </actuator>
+        </transmission>
+    </xacro:macro>
+
+    <!-- Sensor macros -->
+
+    <xacro:macro name="camera_sensor" params="name x y z r p yaw parent">
+        <link name="${name}_link">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <visual>
+                <origin xyz="0 0 0" rpy="0 0 0"/>
+                <geometry>
+                    <box size="0.05 0.05 0.05"/>
+                </geometry>
+                <material name="green"/>
+            </visual>
+        </link>
+
+        <joint name="${name}_joint" type="fixed">
+            <origin xyz="${x} ${y} ${z}" rpy="${r} ${p} ${yaw}"/> <!-- +z should point into the plane of the image  -->
+            <parent link="${parent}"/>
+            <child link="${name}_link"/>
+        </joint>
+
+        <!-- need an optical joint to make the camera spec work -->
+        <joint name="${name}_optical_joint" type="fixed">
+            <!-- these values have to be these values otherwise the gazebo camera
+            image won't be aligned properly with the frame it is supposedly
+            originating from -->
+            <origin xyz="0 0 0" rpy="${-pi/2} 0 ${-pi/2}"/>
+            <parent link="${name}_link"/>
+            <child link="${name}_link_optical"/>
+        </joint>
+
+        <link name="${name}_link_optical"/>
+
+        <gazebo reference="${name}_link">
+            <sensor type="camera" name="${name}">
+                <always_on>true</always_on>
+                <update_rate>15.0</update_rate>
+                <camera name="${name}">
+                    <horizontal_fov>1.46608</horizontal_fov>
+                    <image>
+                        <width>320</width>
+                        <height>180</height>
+                        <format>R8G8B8</format>
+                    </image>
+                    <distortion>
+                        <k1>0.0</k1>
+                        <k2>0.0</k2>
+                        <k3>0.0</k3>
+                        <p1>0.0</p1>
+                        <p2>0.0</p2>
+                        <center>0.5 0.5</center>
+                    </distortion>
+                </camera>
+                <plugin name="plugin_name" filename="libgazebo_ros_camera.so">
+                    <ros>
+                        <!-- <namespace>stereo</namespace> -->
+                        <remapping>~/image_raw:=image_raw</remapping>
+                        <remapping>~/camera_info:=camera_info</remapping>
+                    </ros>
+                    <!-- Set camera name. If empty, defaults to sensor name (i.e. "sensor_name") -->
+                    <camera_name>${name}</camera_name>
+                    <!-- Set TF frame name. If empty, defaults to link name (i.e. "link_name") -->
+                    <frame_name>${name}_link_optical</frame_name>
+                    <hack_baseline>0.2</hack_baseline>
+                </plugin>
+            </sensor>
+            <material>Gazebo/Green</material>
+        </gazebo>
+    </xacro:macro>
+
+    <xacro:macro name="depth" params="name x y z r p yaw parent">
+
+        <link name="${name}_link">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <visual>
+                <origin xyz="0 0 0" rpy="0 0 0"/>
+                <geometry>
+                    <box size="0.05 0.1 0.025"/>
+                </geometry>
+                <material name="orange"/>
+            </visual>
+        </link>
+        <gazebo reference="${name}_link">
+            <material>Gazebo/Orange</material>
+        </gazebo>
+
+        <joint name="${name}_joint" type="fixed">
+            <origin xyz="${x} ${y} ${z}" rpy="${r} ${p} ${yaw}"/> <!-- +z should point into the plane of the image  -->
+            <parent link="${parent}"/>
+            <child link="${name}_link"/>
+        </joint>
+
+        <!-- need an optical joint to make the camera spec work -->
+        <joint name="${name}_optical_joint" type="fixed">
+            <!-- these values have to be these values otherwise the gazebo camera
+            image won't be aligned properly with the frame it is supposedly
+            originating from -->
+            <origin xyz="0 0 0" rpy="${-pi/2} 0 ${-pi/2}"/>
+            <parent link="${name}_link"/>
+            <child link="${name}_link_optical"/>
+        </joint>
+
+        <link name="${name}_link_optical"/>
+
+        <gazebo reference="${name}_link">
+            <sensor name="${name}" type="depth">
+                <always_on>true</always_on>
+                <update_rate>15</update_rate>
+                <pose>0 0 0 0 0 0</pose>
+                <camera name="realsense_depth_camera">
+                    <horizontal_fov>1.46608</horizontal_fov>
+                    <image>
+                        <width>424</width>
+                        <height>240</height>
+                        <format>B8G8R8</format>
+                    </image>
+                    <clip>
+                        <near>0.05</near>
+                        <far>8</far>
+                    </clip>
+                </camera>
+                <plugin name="intel_realsense_d430_depth_driver" filename="libgazebo_ros_camera.so">
+                    <ros>
+                        <namespace>d430</namespace>
+                        <remapping>${name}/image_raw:=color/image_raw</remapping>
+                        <remapping>${name}/depth/image_raw:=depth/image_rect_raw</remapping>
+                        <remapping>${name}/camera_info:=camera_info</remapping>
+                        <remapping>${name}/depth/camera_info:=depth/camera_info</remapping>
+                        <remapping>${name}/points:=depth/points</remapping>
+                    </ros>
+                    <camera_name>${name}</camera_name>
+                    <frame_name>${name}_link_optical</frame_name>
+                    <hack_baseline>0.07</hack_baseline>
+                    <min_depth>0.05</min_depth>
+                    <max_depth>8.0</max_depth>
+                </plugin>
+            </sensor>
+        </gazebo>
+    </xacro:macro>
+
+    <!-- Add the remaining xacros -->
+    <xacro:include filename="$(find metrobot_description)/urdf/materials.xacro" />
+
+</robot>
