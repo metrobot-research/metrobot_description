@@ -70,8 +70,8 @@
           <update_rate>200</update_rate>
 
           <!-- wheels -->
-          <left_joint>left_wheel_joint</left_joint>
-          <right_joint>right_wheel_joint</right_joint>
+          <left_joint>left_drive_wheel_joint</left_joint>
+          <right_joint>right_drive_wheel_joint</right_joint>
 
           <!-- kinematics -->
           <wheel_separation>${base_length - 2*drive_wheel_base_separation + drive_wheel_thickness}</wheel_separation>

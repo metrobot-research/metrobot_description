@@ -5,7 +5,7 @@
 
     <!-- Drive Wheels -->
     <xacro:property name="drive_wheel_radius" value="0.0508" />
-    <xacro:property name="drive_wheel_mass" value="1"/>
+    <xacro:property name="drive_wheel_mass" value="0.01"/>
     <xacro:property name="drive_wheel_thickness" value="0.01905"/>
     <xacro:property name="drive_wheel_intertia"
                     value="${1.0/12*drive_wheel_mass*
@@ -31,7 +31,7 @@
     <!-- offset from the edges of the base -->
     <xacro:property name="omni_wheel_offset" value="0.0508"/>
     <!-- offset from the center of the base -->
-    <xacro:property name="omni_wheel_vertical_offset" value="-0.003175"/>
+    <xacro:property name="omni_wheel_vertical_offset" value="0.0001"/>
 
     <!-- Base Frame -->
     <xacro:property name="base_width" value="0.4064"/>
@@ -316,24 +316,24 @@
 <!--    <xacro:camera_sensor name="stereo/left" x="0" y="0.1" z="0" r="0" p="0" yaw="0" parent="stereo_cam_link"/>-->
 <!--    <xacro:camera_sensor name="stereo/right" x="0" y="-0.1" z="0" r="0" p="0" yaw="0" parent="stereo_cam_link"/>-->
 
-    <!-- Intel Realense T265 + D435 -->
-    <!-- D435 is about 0.2 meters above the ground -->
-<!--    <xacro:depth name="d430" x="${head_width/2}" y="0" z="${-wheel_radius+vertical_wheel_offset+0.0675}" r="0" p="0" yaw="0" parent="head"/>-->
+<!--     Intel Realense T265 + D435-->
+<!--     D435 is about 0.2 meters above the ground-->
+    <xacro:depth name="d430" x="${base_width/2}" y="0" z="${base_thickness}" r="0" p="0" yaw="0" parent="chassis"/>
 
-<!--    <link name="t260_link">-->
-<!--        <visual>-->
-<!--            <origin xyz="0 0 0" rpy="0 0 0" />-->
-<!--            <geometry>-->
-<!--                <box size="0.0125 0.108 0.025" />-->
-<!--            </geometry>-->
-<!--            <material name="white" />-->
-<!--        </visual>-->
-<!--    </link>-->
-<!--    <joint name="chassis_t260_joint" type="fixed">-->
-<!--        &lt;!&ndash; Rotate 54.1 deg off vertical &ndash;&gt;-->
-<!--        <origin xyz="0.09 0 0.08" rpy="0 -0.9442231 0" />-->
-<!--        <parent link="chassis" />-->
-<!--        <child link="t260_link" />-->
-<!--    </joint>-->
+    <link name="t260_link">
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <box size="0.0125 0.108 0.025" />
+            </geometry>
+            <material name="white" />
+        </visual>
+    </link>
+    <joint name="chassis_t260_joint" type="fixed">
+        <!-- Rotate 54.1 deg off vertical -->
+        <origin xyz="${base_width/2} 0 0.1" rpy="0 0.0 0" />
+        <parent link="chassis" />
+        <child link="t260_link" />
+    </joint>
 
 </robot>

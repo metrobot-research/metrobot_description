@@ -142,11 +142,11 @@
                 <geometry>
                     <box size="0.05 0.1 0.025"/>
                 </geometry>
-                <material name="orange"/>
+                <material name="blue"/>
             </visual>
         </link>
         <gazebo reference="${name}_link">
-            <material>Gazebo/Orange</material>
+            <material>Gazebo/Blue</material>
         </gazebo>
 
         <joint name="${name}_joint" type="fixed">
