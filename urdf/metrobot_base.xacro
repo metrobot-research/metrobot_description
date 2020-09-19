@@ -187,7 +187,7 @@
         <child link="rear_right_omni_wheel" />
     </joint>
 
-    <link name="font_right_omni_wheel">
+    <link name="front_right_omni_wheel">
         <inertial>
             <xacro:omni_wheel_inertial_params />
         </inertial>
@@ -200,12 +200,12 @@
         </collision>
     </link>
 
-    <joint name="font_right_omni_wheel_joint" type="fixed">
+    <joint name="front_right_omni_wheel_joint" type="fixed">
         <origin xyz="${base_length/2 - omni_wheel_offset}
         ${-base_width/2 - omni_wheel_base_separation}
         ${omni_wheel_vertical_offset}" rpy="1.5708 0 0" />
         <parent link="chassis" />
-        <child link="font_right_omni_wheel" />
+        <child link="front_right_omni_wheel" />
     </joint>
 
     <!-- IMU -->
